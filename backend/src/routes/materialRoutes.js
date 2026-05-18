@@ -11,6 +11,7 @@ const cloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CL
 let upload;
 
 if (cloudinaryConfigured) {
+  console.log('Using Cloudinary storage');
   const cloudinary = require('cloudinary').v2;
   const { CloudinaryStorage } = require('multer-storage-cloudinary');
   
@@ -47,6 +48,12 @@ if (cloudinaryConfigured) {
 router.post('/', upload.single('arquivo'), async (req, res) => {
   try {
     const { titulo, descricao } = req.body;
+    
+    console.log('Cloudinary config:', {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'set' : 'NOT SET',
+      api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'NOT SET',
+      api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'NOT SET'
+    });
     
     const materialData = {
       titulo,
