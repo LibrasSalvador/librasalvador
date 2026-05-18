@@ -4,32 +4,44 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Configuração do Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'diwo2ujms',
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Verifica se Cloudinary está configurado
+const cloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
 
-const BUCKET_NAME = process.env.CLOUDINARY_BUCKET || 'librasalvador';
+let upload;
 
-// Configuração do armazenamento Cloudinary para certificados
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'certificados',
-    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
-    transformation: [{ quality: 'auto' }],
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-});
+if (cloudinaryConfigured) {
+  const cloudinary = require('cloudinary').v2;
+  const { CloudinaryStorage } = require('multer-storage-cloudinary');
+  
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+  });
+  
+  const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'certificados',
+      allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
+      transformation: [{ quality: 'auto' }],
+    },
+  });
+  
+  upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+} else {
+  // Fallback: storage local
+  const dir = './uploads/certificados/';
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, dir),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_')),
+  });
+  
+  upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+}
 
 // POST: Adicionar novo certificado para um aluno
 router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
@@ -46,10 +58,9 @@ router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
     
-    // Salva a URL do Cloudinary
-    const arquivoUrl = req.file.path; // Cloudinary retorna a URL em req.file.path
+    // Salva a URL/caminho do arquivo
+    const arquivoUrl = req.file.path;
     
-    // Adiciona novo certificado ao array
     const novoCertificado = {
       nome: nomeCertificado || `Certificado ${(aluno.certificados?.length || 0) + 1}`,
       arquivo: arquivoUrl,
@@ -108,21 +119,17 @@ router.delete('/:alunoId/:certificadoIndex', async (req, res) => {
     
     const arquivo = aluno.certificados[certificadoIndex].arquivo;
     
-    // Remove do Cloudinary se for URL do Cloudinary
-    if (arquivo && arquivo.includes('cloudinary.com')) {
+    // Remove arquivo local se não for URL
+    if (arquivo && !arquivo.startsWith('http')) {
       try {
-        // Extrai o public_id da URL
-        const urlParts = arquivo.split('/upload/');
-        if (urlParts[1]) {
-          const publicId = urlParts[1].replace(/\.[^.]+$/, ''); // Remove extensão
-          await cloudinary.uploader.destroy(publicId);
+        if (fs.existsSync(arquivo)) {
+          fs.unlinkSync(arquivo);
         }
-      } catch (cloudErr) {
-        console.error('Erro ao deletar do Cloudinary:', cloudErr);
+      } catch (e) {
+        console.error('Erro ao excluir arquivo:', e);
       }
     }
     
-    // Remove do array
     aluno.certificados.splice(certificadoIndex, 1);
     await aluno.save();
     
