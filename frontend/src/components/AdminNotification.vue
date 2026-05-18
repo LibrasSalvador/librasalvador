@@ -12,7 +12,7 @@ import 'vue3-toastify/dist/index.css';
 const router = useRouter();
 let socket = null;
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://libras-system.onrender.com';
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || 'https://librasalvador.onrender.com';
 
 onMounted(() => {
   const userRole = localStorage.getItem('userRole');

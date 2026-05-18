@@ -125,7 +125,13 @@ const certificados = ref([]);
 const usuarioId = localStorage.getItem('userId');
 
 const getCertificadoUrl = (arquivo) => {
-  return `https://libras-system.onrender.com/uploads/certificados/${arquivo}`;
+  // Se já for URL completa (Cloudinary/S3), retorna direto
+  if (arquivo && (arquivo.startsWith('http') || arquivo.includes('cloudinary.com') || arquivo.includes('amazonaws.com'))) {
+    return arquivo;
+  }
+  // Caso contrário, constrói a URL local
+  const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'https://librasalvador.onrender.com';
+  return `${baseUrl}/uploads/certificados/${arquivo}`;
 };
 
 const formatarData = (data) => {

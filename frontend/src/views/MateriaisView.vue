@@ -182,12 +182,13 @@ const executarRemocao = async () => {
 const obterUrlArquivo = (caminho) => {
   if (!caminho) return '#';
   const caminhoLimpo = caminho.replace(/\\/g, '/');
-  const baseUrl = 'https://libras-system.onrender.com';
+  const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'https://librasalvador.onrender.com';
   return `${baseUrl}/${caminhoLimpo}`;
 };
 
 const baixarArquivo = (material) => {
-  window.open(`https://libras-system.onrender.com/api/materiais/download/${material._id}`, '_blank');
+  const baseUrl = api.defaults.baseURL ? api.defaults.baseURL.replace('/api', '') : 'https://librasalvador.onrender.com';
+  window.open(`${baseUrl}/api/materiais/download/${material._id}`, '_blank');
 };
 
 onMounted(buscarMateriais);

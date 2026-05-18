@@ -2,20 +2,25 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const fs = require('fs');
 const Material = require('../models/Material');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Configuração do armazenamento do arquivo
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = './uploads/materiais/';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); // Cria a pasta se não existir
-    cb(null, dir);
+// Configuração do Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// Configuração do armazenamento Cloudinary para materiais
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'materiais',
+    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'ppt', 'pptx'],
+    resource_type: 'auto',
   },
-  filename: (req, file, cb) => {
-    // Gera um nome único: data atual + nome original
-    cb(null, Date.now() + '-' + file.originalname);
-  }
 });
 
 const upload = multer({ storage });
@@ -27,8 +32,8 @@ router.post('/', upload.single('arquivo'), async (req, res) => {
     const novoMaterial = new Material({
       titulo,
       descricao,
-      nomeArquivo: req.file.filename,
-      caminho: req.file.path.replace(/\\/g, "/") // Normaliza barras para Windows/Linux
+      nomeArquivo: req.file.originalname,
+      caminho: req.file.path // URL do Cloudinary
     });
     await novoMaterial.save();
     res.status(201).json(novoMaterial);
