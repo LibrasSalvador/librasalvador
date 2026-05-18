@@ -3,22 +3,29 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const User = require('../models/User');
 
-// Storage local simples
-const dir = './uploads/certificados/';
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
-}
+// Configura o Cloudinary
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'diwo2ujms',
+  api_key: process.env.CLOUDINARY_API_KEY || '153556382382953',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'v5lr2Kc1Q-nqScOQXEwXLLrkwDk',
+});
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, dir),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_')),
+// Storage Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary.v2,
+  params: {
+    folder: 'certificados',
+    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
+  },
 });
 
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
-console.log('=== CertificadoRoutes: usando storage local ===');
+console.log('=== CertificadoRoutes: usando Cloudinary ===');
 
 // POST: Adicionar certificado
 router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
@@ -37,7 +44,7 @@ router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
     
     const novoCertificado = {
       nome: nomeCertificado || `Certificado ${(aluno.certificados?.length || 0) + 1}`,
-      arquivo: path.join(dir, req.file.filename),
+      arquivo: req.file.path, // URL do Cloudinary
       dataUpload: new Date()
     };
     
@@ -89,16 +96,6 @@ router.delete('/:alunoId/:certificadoIndex', async (req, res) => {
     
     if (!aluno.certificados || !aluno.certificados[certificadoIndex]) {
       return res.status(404).json({ error: 'Certificado não encontrado' });
-    }
-    
-    const arquivo = aluno.certificados[certificadoIndex].arquivo;
-    
-    try {
-      if (fs.existsSync(arquivo)) {
-        fs.unlinkSync(arquivo);
-      }
-    } catch (e) {
-      console.error('Erro ao excluir arquivo:', e);
     }
     
     aluno.certificados.splice(certificadoIndex, 1);

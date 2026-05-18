@@ -3,26 +3,42 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('cloudinary');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const Material = require('../models/Material');
 
-//.Storage local simples
-const dir = './uploads/materiais/';
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, dir),
-  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_')),
+// Configura o Cloudinary
+cloudinary.v2.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'diwo2ujms',
+  api_key: process.env.CLOUDINARY_API_KEY || '153556382382953',
+  api_secret: process.env.CLOUDINARY_API_SECRET || 'v5lr2Kc1Q-nqScOQXEwXLLrkwDk',
 });
 
-const upload = multer({ storage, limits: { fileSize: 20 * 1024 * 1024 } });
+console.log('=== Cloudinary config ===');
+console.log('cloud_name:', process.env.CLOUDINARY_CLOUD_NAME || 'diwo2ujms');
+console.log('api_key:', process.env.CLOUDINARY_API_KEY);
+console.log('api_secret defined:', !!process.env.CLOUDINARY_API_SECRET);
 
-console.log('=== MaterialRoutes: usando storage local ===');
+// Storage Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary.v2,
+  params: {
+    folder: 'materiais',
+    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx'],
+    resource_type: 'auto',
+  },
+});
+
+const upload = multer({ storage });
+
+console.log('=== MaterialRoutes: usando Cloudinary ===');
 
 // POST: Upload
 router.post('/', upload.single('arquivo'), async (req, res) => {
   try {
+    console.log('=== Upload chamado ===');
+    console.log('req.file:', req.file);
+    
     const { titulo, descricao } = req.body;
     
     if (!req.file) {
@@ -33,15 +49,17 @@ router.post('/', upload.single('arquivo'), async (req, res) => {
       titulo,
       descricao,
       nomeArquivo: req.file.originalname,
-      caminho: path.join(dir, req.file.filename),
+      caminho: req.file.path, // URL do Cloudinary
     };
+    
+    console.log('Salvando:', materialData);
     
     const novoMaterial = new Material(materialData);
     await novoMaterial.save();
     res.status(201).json(novoMaterial);
   } catch (err) {
     console.error('Erro upload:', err);
-    res.status(500).json({ error: "Erro ao processar upload" });
+    res.status(500).json({ error: "Erro ao processar upload: " + err.message });
   }
 });
 
@@ -63,11 +81,17 @@ router.get('/download/:id', async (req, res) => {
       return res.status(404).json({ error: "Material não encontrado" });
     }
     
-    const fullPath = material.caminho;
-    if (!fs.existsSync(fullPath)) {
-      return res.status(404).json({ error: "Arquivo não encontrado" });
+    // Se for URL Cloudinary, redireciona
+    if (material.caminho && material.caminho.startsWith('http')) {
+      return res.redirect(material.caminho);
     }
-    res.download(fullPath);
+    
+    // Senão, tenta caminho local
+    if (fs.existsSync(material.caminho)) {
+      return res.download(material.caminho);
+    }
+    
+    res.status(404).json({ error: "Arquivo não encontrado" });
   } catch (err) {
     res.status(500).json({ error: "Erro ao baixar arquivo" });
   }
@@ -78,11 +102,6 @@ router.delete('/:id', async (req, res) => {
   try {
     const material = await Material.findById(req.params.id);
     if (material) {
-      try {
-        if (fs.existsSync(material.caminho)) {
-          fs.unlinkSync(material.caminho);
-        }
-      } catch (e) {}
       await Material.findByIdAndDelete(req.params.id);
     }
     res.json({ msg: "Removido com sucesso" });
