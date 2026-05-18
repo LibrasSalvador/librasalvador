@@ -5,32 +5,43 @@ const path = require('path');
 const fs = require('fs');
 const Material = require('../models/Material');
 
-// Verifica se Cloudinary está configurado
+console.log('=== MaterialRoutes loaded ===');
+console.log('CLOUDINARY_CLOUD_NAME:', process.env.CLOUDINARY_CLOUD_NAME || 'NOT SET');
+console.log('CLOUDINARY_API_KEY:', process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET');
+console.log('CLOUDINARY_API_SECRET:', process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET');
+
 const cloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
+
+console.log('cloudinaryConfigured:', cloudinaryConfigured);
 
 let upload;
 
 if (cloudinaryConfigured) {
-  console.log('Using Cloudinary storage');
-  const cloudinary = require('cloudinary').v2;
-  const { CloudinaryStorage } = require('multer-storage-cloudinary');
-  
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  
-  const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'materiais',
-      allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'ppt', 'pptx'],
-      resource_type: 'auto',
-    },
-  });
-  
-  upload = multer({ storage });
+  console.log('Initializing Cloudinary...');
+  try {
+    const cloudinary = require('cloudinary').v2;
+    const { CloudinaryStorage } = require('multer-storage-cloudinary');
+    
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+    
+    const storage = new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: 'materiais',
+        allowed_formats: ['pdf', 'jpg', 'jpeg', 'png', 'doc', 'docx', 'ppt', 'pptx'],
+        resource_type: 'auto',
+      },
+    });
+    
+    upload = multer({ storage });
+    console.log('Cloudinary storage initialized successfully');
+  } catch (cloudErr) {
+    console.error('Cloudinary init error:', cloudErr);
+  }
 } else {
   // Fallback: storage local
   const dir = './uploads/materiais/';
