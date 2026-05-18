@@ -5,45 +5,22 @@ const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
 
-// Verifica se Cloudinary está configurado
-const cloudinaryConfigured = process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET;
-
-let upload;
-
-if (cloudinaryConfigured) {
-  const cloudinary = require('cloudinary').v2;
-  const { CloudinaryStorage } = require('multer-storage-cloudinary');
-  
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  
-  const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'certificados',
-      allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
-      transformation: [{ quality: 'auto' }],
-    },
-  });
-  
-  upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
-} else {
-  // Fallback: storage local
-  const dir = './uploads/certificados/';
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  
-  const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, dir),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_')),
-  });
-  
-  upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+// Storage local simples
+const dir = './uploads/certificados/';
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir, { recursive: true });
 }
 
-// POST: Adicionar novo certificado para um aluno
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, dir),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname.replace(/\s+/g, '_')),
+});
+
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+
+console.log('=== CertificadoRoutes: usando storage local ===');
+
+// POST: Adicionar certificado
 router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
   try {
     const { alunoId } = req.params;
@@ -58,12 +35,9 @@ router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
     
-    // Salva a URL/caminho do arquivo
-    const arquivoUrl = req.file.path;
-    
     const novoCertificado = {
       nome: nomeCertificado || `Certificado ${(aluno.certificados?.length || 0) + 1}`,
-      arquivo: arquivoUrl,
+      arquivo: path.join(dir, req.file.filename),
       dataUpload: new Date()
     };
     
@@ -84,7 +58,7 @@ router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
   }
 });
 
-// GET: Listar todos os certificados de um aluno
+// GET: Listar certificados
 router.get('/:alunoId', async (req, res) => {
   try {
     const { alunoId } = req.params;
@@ -103,7 +77,7 @@ router.get('/:alunoId', async (req, res) => {
   }
 });
 
-// DELETE: Remover um certificado específico
+// DELETE: Remover certificado
 router.delete('/:alunoId/:certificadoIndex', async (req, res) => {
   try {
     const { alunoId, certificadoIndex } = req.params;
@@ -119,15 +93,12 @@ router.delete('/:alunoId/:certificadoIndex', async (req, res) => {
     
     const arquivo = aluno.certificados[certificadoIndex].arquivo;
     
-    // Remove arquivo local se não for URL
-    if (arquivo && !arquivo.startsWith('http')) {
-      try {
-        if (fs.existsSync(arquivo)) {
-          fs.unlinkSync(arquivo);
-        }
-      } catch (e) {
-        console.error('Erro ao excluir arquivo:', e);
+    try {
+      if (fs.existsSync(arquivo)) {
+        fs.unlinkSync(arquivo);
       }
+    } catch (e) {
+      console.error('Erro ao excluir arquivo:', e);
     }
     
     aluno.certificados.splice(certificadoIndex, 1);
