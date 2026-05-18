@@ -58,13 +58,19 @@ if (cloudinaryConfigured) {
 // POST: Upload de arquivo e dados
 router.post('/', upload.single('arquivo'), async (req, res) => {
   try {
-    const { titulo, descricao } = req.body;
-    
+    console.log('=== POST /materiais called ===');
+    console.log('upload type:', typeof upload);
     console.log('Cloudinary config:', {
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME ? 'set' : 'NOT SET',
       api_key: process.env.CLOUDINARY_API_KEY ? 'set' : 'NOT SET',
       api_secret: process.env.CLOUDINARY_API_SECRET ? 'set' : 'NOT SET'
     });
+    
+    const { titulo, descricao } = req.body;
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'Nenhum arquivo enviado' });
+    }
     
     const materialData = {
       titulo,
