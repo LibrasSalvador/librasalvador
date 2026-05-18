@@ -4,31 +4,31 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const User = require('../models/User');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Configuração do armazenamento do arquivo
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = './uploads/certificados/';
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
+// Configuração do Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME || 'diwo2ujms',
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const upload = multer({ 
+const BUCKET_NAME = process.env.CLOUDINARY_BUCKET || 'librasalvador';
+
+// Configuração do armazenamento Cloudinary para certificados
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'certificados',
+    allowed_formats: ['pdf', 'jpg', 'jpeg', 'png'],
+    transformation: [{ quality: 'auto' }],
+  },
+});
+
+const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  fileFilter: (req, file, cb) => {
-    const allowed = /pdf|jpg|jpeg|png/;
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (allowed.test(ext)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Apenas PDF, JPG ou PNG são permitidos'));
-    }
-  }
 });
 
 // POST: Adicionar novo certificado para um aluno
@@ -46,10 +46,13 @@ router.post('/:alunoId', upload.single('certificado'), async (req, res) => {
       return res.status(400).json({ error: 'Nenhum arquivo enviado' });
     }
     
+    // Salva a URL do Cloudinary
+    const arquivoUrl = req.file.path; // Cloudinary retorna a URL em req.file.path
+    
     // Adiciona novo certificado ao array
     const novoCertificado = {
       nome: nomeCertificado || `Certificado ${(aluno.certificados?.length || 0) + 1}`,
-      arquivo: req.file.filename,
+      arquivo: arquivoUrl,
       dataUpload: new Date()
     };
     
@@ -103,11 +106,20 @@ router.delete('/:alunoId/:certificadoIndex', async (req, res) => {
       return res.status(404).json({ error: 'Certificado não encontrado' });
     }
     
-    // Remove arquivo físico
     const arquivo = aluno.certificados[certificadoIndex].arquivo;
-    const caminhoArquivo = path.join(__dirname, '../../uploads/certificados/', arquivo);
-    if (fs.existsSync(caminhoArquivo)) {
-      fs.unlinkSync(caminhoArquivo);
+    
+    // Remove do Cloudinary se for URL do Cloudinary
+    if (arquivo && arquivo.includes('cloudinary.com')) {
+      try {
+        // Extrai o public_id da URL
+        const urlParts = arquivo.split('/upload/');
+        if (urlParts[1]) {
+          const publicId = urlParts[1].replace(/\.[^.]+$/, ''); // Remove extensão
+          await cloudinary.uploader.destroy(publicId);
+        }
+      } catch (cloudErr) {
+        console.error('Erro ao deletar do Cloudinary:', cloudErr);
+      }
     }
     
     // Remove do array
