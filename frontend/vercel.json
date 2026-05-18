@@ -1,9 +1,9 @@
 {
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "https://libras-system.onrender.com/api/$1" },
-    { "source": "/uploads/certificados/(.*)", "destination": "https://libras-system.onrender.com/uploads/certificados/$1" },
-    { "source": "/uploads/(.*)", "destination": "https://libras-system.onrender.com/uploads/$1" },
+    { "source": "/api/(.*)", "destination": "https://librasalvador.onrender.com/api/$1" },
+    { "source": "/uploads/certificados/(.*)", "destination": "https://librasalvador.onrender.com/uploads/certificados/$1" },
+    { "source": "/uploads/(.*)", "destination": "https://librasalvador.onrender.com/uploads/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
