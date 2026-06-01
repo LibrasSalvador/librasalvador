@@ -50,10 +50,6 @@
               <label>Impostos (%)</label>
               <input v-model.number="form.imposto" type="number" step="0.1" placeholder="Ex: 6.0" />
             </div>
-            <div>
-              <label>Margem de Lucro (%)</label>
-              <input v-model.number="form.lucro" type="number" step="0.1" placeholder="Ex: 20.0" />
-            </div>
           </div>
 
           <div class="form-group">
@@ -99,16 +95,9 @@
           <div class="detail-item">
             <div class="flex items-center gap-2">
               <ShieldAlert :size="16" class="text-red-400" />
-              <span>Reserva para Impostos ({{ form.imposto || 0 }}%)</span>
+              <span>Encargos/Impostos ({{ form.imposto || 0 }}%)</span>
             </div>
             <strong class="text-negative">R$ {{ valorImposto.toFixed(2) }}</strong>
-          </div>
-          <div class="detail-item highlight">
-            <div class="flex items-center gap-2">
-              <TrendingUp :size="16" class="text-green-500" />
-              <span>Lucro Líquido ({{ form.lucro || 0 }}%)</span>
-            </div>
-            <strong class="text-positive">R$ {{ valorLucro.toFixed(2) }}</strong>
           </div>
           <div class="detail-item">
             <div class="flex items-center gap-2">
@@ -158,7 +147,6 @@ const form = ref({
   valorHora: 150,
   logistica: 50,
   imposto: 6,
-  lucro: 20,
   observacoes: '',
   prazoEntrega: '',
   politicaCancelamento: '',
@@ -170,16 +158,12 @@ const subtotalBruto = computed(() => {
 });
 
 const valorFinal = computed(() => {
-  // Lucro é ABATIDO do valor total, impostos são ACRESCIDOS
-  const subtotal = subtotalBruto.value;
-  const imposto = subtotal * ((form.value.imposto || 0) / 100);
-  const lucro = subtotal * ((form.value.lucro || 0) / 100);
-  return subtotal + imposto - lucro;
+  // Apenas soma os impostos ao subtotal
+  const imposto = subtotalBruto.value * ((form.value.imposto || 0) / 100);
+  return subtotalBruto.value + imposto;
 });
 
-// valorImposto e valorLucro são baseados no subtotal
 const valorImposto = computed(() => subtotalBruto.value * ((form.value.imposto || 0) / 100));
-const valorLucro = computed(() => subtotalBruto.value * ((form.value.lucro || 0) / 100));
 
 const copyToClipboard = () => {
   const msg = `Orçamento - Serviços de Acessibilidade em Libras
@@ -187,8 +171,7 @@ const copyToClipboard = () => {
 ${form.value.nomeCliente ? 'Cliente: ' + form.value.nomeCliente + '\n' : ''}Duração Estimada: ${form.value.tempoServico} horas
 Valor da Hora: R$ ${form.value.valorHora}
 Taxa de Logística: R$ ${(form.value.logistica || 0).toFixed(2)}
-Impostos (${form.value.imposto || 0}%): R$ ${valorImposto.value.toFixed(2)}
-Lucro Líquido (${form.value.lucro || 0}%): R$ ${valorLucro.value.toFixed(2)}
+Encargos/Impostos (${form.value.imposto || 0}%): R$ ${valorImposto.value.toFixed(2)}
 --------------------------------------
 Valor Final Sugerido: R$ ${valorFinal.value.toFixed(2)}
 --------------------------------------
@@ -364,28 +347,22 @@ const gerarPDF = () => {
     y += 12;
     
     // ==========================
-    // IMPOSTO E MARGEM
+    // IMPOSTO
     // ==========================
     doc.setFillColor(248, 250, 252);
     doc.rect(14, y - 5, 182, 8, 'F');
     doc.setTextColor(0, 74, 173);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
-    doc.text('IMPOSTO E MARGEM', 16, y);
+    doc.text('ENCARGOS', 16, y);
     y += 8;
     
     doc.setFontSize(9);
-    var taxItems = [
-      ['Reserva para Imposto (' + (form.value.imposto ? form.value.imposto : 0) + '%)', 'R$ ' + valorImposto.toFixed(2)],
-      ['Margem de Lucro', 'Retirada']
-    ];
-    for (var k = 0; k < taxItems.length; k++) {
-      doc.setFont('helvetica', 'normal');
-      doc.setTextColor(60, 60, 60);
-      doc.text(taxItems[k][0], 16, y);
-      doc.text(taxItems[k][1], 170, y, { align: 'right' });
-      y += 7;
-    }
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    doc.text('Encargos/Impostos (' + (form.value.imposto ? form.value.imposto : 0) + '%)', 16, y);
+    doc.text('R$ ' + valorImposto.value.toFixed(2), 170, y, { align: 'right' });
+    y += 7;
     
     y += 8;
     
