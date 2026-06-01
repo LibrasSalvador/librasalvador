@@ -464,7 +464,7 @@ const gerarPDF = () => {
     var condicoes = [
       '• Nossos intérpretes estarão disponíveis para atuar no evento a partir do horário solicitado pelo cliente. É importante ressaltar que, caso o evento atrase, as horas de disponibilidade dos intérpretes ainda serão cobradas integralmente, de acordo com a programação original acordada.',
       '• Caso haja um atraso maior de 10 minutos a cada hora trabalhada será cobrada uma hora excedente no valor final do serviço.',
-      '• Proposta já inclui os valores referentes aos tributos sobre emissão da nota (' + (form.value.imposto || 19) + '%).'
+      '• Proposta já inclui os valores referentes aos tributos sobre emissão da nota (19%).'
     ];
     
     for (var c = 0; c < condicoes.length; c++) {
