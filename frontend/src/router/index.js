@@ -99,7 +99,7 @@ const routes = [
     path: '/admin/forum',
     name: 'AdminForum',
     component: AdminForunsView,
-    meta: { requiresAuth: true, role: ['admin', 'professor'] }
+    meta: { requiresAuth: true, role: ['admin', 'admin_restrito', 'professor'] }
   },
   {
     path: '/admin/usuarios',
