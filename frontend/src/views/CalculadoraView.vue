@@ -485,6 +485,19 @@ const gerarPDF = () => {
       }
     }
     
+    if (form.value.requisitos) {
+      y += 2;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Requisitos:', 16, y);
+      y += 5;
+      doc.setFont('helvetica', 'normal');
+      var reqLinhas = doc.splitTextToSize(form.value.requisitos, 180);
+      for (var rl = 0; rl < reqLinhas.length; rl++) {
+        doc.text(reqLinhas[rl], 16, y);
+        y += 5;
+      }
+    }
+    
     y += 10;
     
     // ==========================
