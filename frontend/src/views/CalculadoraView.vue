@@ -63,6 +63,11 @@
           </div>
 
           <div class="form-group">
+            <label>Validade da Proposta (dias)</label>
+            <input v-model.number="form.validadeProposta" type="number" min="1" placeholder="Ex: 10" />
+          </div>
+
+          <div class="form-group">
             <label>Política de Cancelamento</label>
             <input v-model="form.politicaCancelamento" type="text" placeholder="Ex: Cancelamento com 48h de antecedência" />
           </div>
@@ -149,6 +154,7 @@ const form = ref({
   imposto: 6,
   observacoes: '',
   prazoEntrega: '',
+  validadeProposta: 10,
   politicaCancelamento: '',
   requisitos: ''
 });
@@ -420,7 +426,7 @@ const gerarPDF = () => {
     doc.setFont('helvetica', 'normal');
     doc.text('Prazo de Entrega/Execucao: ' + (form.value.prazoEntrega ? form.value.prazoEntrega : '________________________________'), 14, y);
     y += 6;
-    doc.text('Validade da Proposta: Este orcamento e valido por 10 dias.', 14, y);
+    doc.text('Validade da Proposta: Este orcamento e valido por ' + (form.value.validadeProposta || 10) + ' dias.', 14, y);
     y += 10;
     
     // ==========================
