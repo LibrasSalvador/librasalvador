@@ -48,7 +48,7 @@
           <div class="form-row">
             <div>
               <label>Impostos (%)</label>
-              <input v-model.number="form.imposto" type="number" step="0.1" placeholder="Ex: 6.0" />
+              <input v-model.number="form.imposto" type="number" step="0.1" placeholder="Ex: 19.0" />
             </div>
           </div>
 
@@ -156,7 +156,7 @@ const form = ref({
   tempoServico: 2,
   valorHora: 150,
   logistica: 50,
-  imposto: 6,
+  imposto: 19,
   observacoes: '',
   prazoEntrega: '',
   prazoPagamento: '',
