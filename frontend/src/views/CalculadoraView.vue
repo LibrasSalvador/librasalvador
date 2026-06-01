@@ -170,15 +170,16 @@ const subtotalBruto = computed(() => {
 });
 
 const valorFinal = computed(() => {
-  const txImposto = (form.value.imposto || 0) / 100;
-  const txLucro = (form.value.lucro || 0) / 100;
-  const taxasSum = txImposto + txLucro;
-  if (taxasSum >= 1) return 0;
-  return subtotalBruto.value / (1 - taxasSum);
+  // Lucro é ABATIDO do valor total, impostos são ACRESCIDOS
+  const subtotal = subtotalBruto.value;
+  const imposto = subtotal * ((form.value.imposto || 0) / 100);
+  const lucro = subtotal * ((form.value.lucro || 0) / 100);
+  return subtotal + imposto - lucro;
 });
 
-const valorImposto = computed(() => valorFinal.value * ((form.value.imposto || 0) / 100));
-const valorLucro = computed(() => valorFinal.value * ((form.value.lucro || 0) / 100));
+// valorImposto e valorLucro são baseados no subtotal
+const valorImposto = computed(() => subtotalBruto.value * ((form.value.imposto || 0) / 100));
+const valorLucro = computed(() => subtotalBruto.value * ((form.value.lucro || 0) / 100));
 
 const copyToClipboard = () => {
   const msg = `Orçamento - Serviços de Acessibilidade em Libras
