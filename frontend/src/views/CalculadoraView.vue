@@ -209,33 +209,34 @@ const gerarPDF = () => {
     };
     
     let y = 15;
+    let pageNum = 1;
     
     // ==========================
     // CABEÇALHO COM LOGO
     // ==========================
     doc.setFillColor(0, 74, 173);
-    doc.rect(0, 0, 210, 38, 'F');
+    doc.rect(0, 0, 210, 40, 'F');
     
     try {
-      doc.addImage(logoImg, 'PNG', 15, 7, 40, 24);
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(20);
-      doc.setFont('helvetica', 'bold');
-      doc.text('ORÇAMENTO', 62, 18);
-      doc.setFontSize(9);
-      doc.setFont('helvetica', 'normal');
-      doc.text('Serviços de Tradução e Interpretação em Libras', 62, 27);
-      doc.text('CNPJ: ' + dadosEmpresa.cnpj, 62, 34);
-    } catch (e) {
+      doc.addImage(logoImg, 'PNG', 15, 8, 42, 24);
       doc.setTextColor(255, 255, 255);
       doc.setFontSize(22);
       doc.setFont('helvetica', 'bold');
-      doc.text('ORÇAMENTO', 14, 18);
-      doc.setFontSize(12);
-      doc.setFont('helvetica', 'normal');
-      doc.text('LIBRAS SALVADOR LTDA', 14, 28);
+      doc.text('ORÇAMENTO', 65, 18);
       doc.setFontSize(10);
-      doc.text('CNPJ: ' + dadosEmpresa.cnpj, 14, 36);
+      doc.setFont('helvetica', 'normal');
+      doc.text('Serviços de Tradução e Interpretação em Libras', 65, 28);
+      doc.text('CNPJ: ' + dadosEmpresa.cnpj, 65, 36);
+    } catch (e) {
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(24);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ORÇAMENTO', 14, 20);
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'normal');
+      doc.text('LIBRAS SALVADOR LTDA', 14, 32);
+      doc.setFontSize(11);
+      doc.text('CNPJ: ' + dadosEmpresa.cnpj, 14, 40);
     }
     
     y = 48;
@@ -253,12 +254,12 @@ const gerarPDF = () => {
     
     // Prestador - Box
     doc.setFillColor(240, 248, 255);
-    doc.rect(14, y - 5, 90, 45, 'F');
+    doc.rect(14, y - 5, 90, 48, 'F');
     doc.setTextColor(0, 74, 173);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('PRESTADOR DE SERVIÇOS', 16, y);
-    y += 6;
+    y += 7;
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -277,12 +278,12 @@ const gerarPDF = () => {
     // Cliente - Box
     y = 58;
     doc.setFillColor(240, 253, 244);
-    doc.rect(106, y - 5, 90, 45, 'F');
+    doc.rect(106, y - 5, 90, 48, 'F');
     doc.setTextColor(22, 101, 52);
     doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('CLIENTE', 108, y);
-    y += 6;
+    y += 7;
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
@@ -301,7 +302,7 @@ const gerarPDF = () => {
       doc.text('Setor: ' + form.value.setor, 108, y);
     }
     
-    y = 108;
+    y = 110;
     
     // ==========================
     // 2. DESCRIÇÃO DOS SERVIÇOS
@@ -324,6 +325,14 @@ const gerarPDF = () => {
       y += 5;
     }
     y += 5;
+    
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(100, 100, 100);
+    doc.text('O preço da hora/interpretação leva em conta a lista de referência da FEBRAPILS para esse tipo de atividade.', 14, y);
+    y += 5;
+    doc.text('Para atividades com até uma hora de duração, será necessária a atuação de um intérprete de Libras.', 14, y);
+    y += 12;
     
     // ==========================
     // 3. DETALHAMENTO FINANCEIRO
@@ -364,76 +373,93 @@ const gerarPDF = () => {
     
     y += 2;
     doc.setFillColor(0, 74, 173);
-    doc.rect(14, y - 4, 160, 8, 'F');
+    doc.rect(14, y - 5, 160, 9, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.text('VALOR TOTAL', 16, y);
     doc.text('R$ ' + valorFinal.value.toFixed(2), 170, y, { align: 'right' });
+    y += 12;
+    
+    // Encargos
+    doc.setFillColor(255, 251, 235);
+    doc.rect(14, y - 5, 182, 8, 'F');
+    doc.setTextColor(180, 140, 50);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('ENCARGOS (Impostos)', 16, y);
+    doc.text('R$ ' + valorImposto.toFixed(2) + ' (' + (form.value.imposto || 0) + '%)', 170, y, { align: 'right' });
     y += 12;
     
     // ==========================
     // 4. PAGAMENTO E PRAZOS
     // ==========================
     doc.setFillColor(0, 74, 173);
-    doc.rect(14, y - 5, 182, 7, 'F');
+    doc.rect(14, y - 5, 182, 8, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('4. PAGAMENTO E PRAZOS', 16, y);
-    y += 9;
+    y += 10;
     
-    // Dados de pagamento
+    // Dados de pagamento em box
     doc.setFillColor(240, 248, 255);
-    doc.rect(14, y - 4, 182, 30, 'F');
+    doc.rect(14, y - 5, 182, 38, 'F');
     doc.setTextColor(0, 74, 173);
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'bold');
     doc.text('DADOS PARA PAGAMENTO', 16, y);
-    y += 6;
+    y += 7;
     doc.setTextColor(60, 60, 60);
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Libras Salvador LTDA - Pix: 71 98836-1371 (Celular)', 16, y);
-    y += 5;
-    doc.text('Banco Itaú (341) Ag: 1395 | CC: 99765-1', 16, y);
+    doc.text('Libras Salvador LTDA', 16, y);
     y += 6;
+    doc.text('Pix: 71 98836-1371 (Celular)', 16, y);
+    y += 6;
+    doc.text('Banco Itaú (341) Ag: 1395 | CC: 99765-1', 16, y);
+    y += 8;
+    
+    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
     var prazoPag = form.value.prazoPagamento ? form.value.prazoPagamento : 'A combinar';
     doc.text('Prazo de pagamento: ' + prazoPag, 16, y);
     y += 12;
     
     // Prazos
-    doc.setFontSize(8);
-    doc.setTextColor(60, 60, 60);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
     var prazoTexto = form.value.prazoEntrega ? form.value.prazoEntrega : 'A definir';
-    doc.text('Prazo de Entrega: ' + prazoTexto + '  |  ', 16, y);
+    doc.text('Prazo de Entrega/Execução: ' + prazoTexto, 14, y);
+    y += 6;
     var validade = form.value.validadeProposta;
     if (validade && validade > 0) {
-      doc.text('Validade: ' + validade + ' dias', 90, y);
+      doc.text('Validade da Proposta: ' + validade + ' dias', 14, y);
     } else {
-      doc.text('Validade: 10 dias', 90, y);
+      doc.text('Validade da Proposta: 10 dias', 14, y);
     }
-    y += 10;
+    y += 12;
     
     // ==========================
     // 5. CONDIÇÕES
     // ==========================
     doc.setFillColor(0, 74, 173);
-    doc.rect(14, y - 5, 182, 7, 'F');
+    doc.rect(14, y - 5, 182, 8, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(11);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('5. CONDIÇÕES', 16, y);
-    y += 9;
+    y += 10;
     
     doc.setTextColor(60, 60, 60);
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     
     var condicoes = [
-      '• Intérpretes disponíveis a partir do horário solicitado. Horas de atraso serão cobradas integralmente.',
-      '• Atrasos >10min/hora serão cobrados como hora excedente.',
-      '• Proposta inclui valores referentes aos tributos sobre emissão da nota (' + (form.value.imposto || 19) + '%).'
+      '• Nossos intérpretes estarão disponíveis para atuar no evento a partir do horário solicitado pelo cliente. É importante ressaltar que, caso o evento atrase, as horas de disponibilidade dos intérpretes ainda serão cobradas integralmente, de acordo com a programação original acordada.',
+      '• Caso haja um atraso maior de 10 minutos a cada hora trabalhada será cobrada uma hora excedente no valor final do serviço.',
+      '• Proposta já inclui os valores referentes aos tributos sobre emissão da nota (' + (form.value.imposto || 19) + '%).'
     ];
     
     for (var c = 0; c < condicoes.length; c++) {
@@ -441,25 +467,25 @@ const gerarPDF = () => {
       var linhas = doc.splitTextToSize(texto, 180);
       for (var l = 0; l < linhas.length; l++) {
         doc.text(linhas[l], 16, y);
-        y += 4;
+        y += 5;
       }
-      y += 1;
+      y += 3;
     }
     
     if (form.value.politicaCancelamento) {
       y += 2;
       doc.setFont('helvetica', 'bold');
       doc.text('Política de Cancelamento:', 16, y);
-      y += 4;
+      y += 5;
       doc.setFont('helvetica', 'normal');
       var cancelLinhas = doc.splitTextToSize(form.value.politicaCancelamento, 180);
       for (var cl = 0; cl < cancelLinhas.length; cl++) {
         doc.text(cancelLinhas[cl], 16, y);
-        y += 4;
+        y += 5;
       }
     }
     
-    y += 6;
+    y += 10;
     
     // ==========================
     // DIFERENCIAIS
@@ -467,47 +493,58 @@ const gerarPDF = () => {
     if (y > 250) {
       doc.addPage();
       y = 20;
+      pageNum++;
     }
     
     doc.setFillColor(22, 101, 52);
-    doc.rect(14, y - 5, 182, 7, 'F');
+    doc.rect(14, y - 5, 182, 8, 'F');
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(10);
+    doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.text('POR QUE ESCOLHER A LIBRAS SALVADOR?', 16, y);
-    y += 9;
+    y += 10;
     
     doc.setTextColor(60, 60, 60);
-    doc.setFontSize(7);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     var diferenciais = [
-      '• Empresa especializada em tradução e interpretação em Libras',
-      '• Equipe de intérpretes qualificados em vários estados do Brasil',
-      '• Mais de 300 avaliações 5 estrelas no Google',
-      '• Emissão de Nota Fiscal como Tradução e Interpretação'
+      'A Libras Salvador é uma empresa especializada em tradução e interpretação em Libras e foi criada pela união de duas paixões: a Libras e a história da cidade de Salvador!',
+      'Temos o compromisso com a qualidade e ética no atendimento ao público Surdo, por meio da acessibilidade linguística.',
+      'Possuímos uma equipe de intérpretes qualificados para atendimento em vários estados do Brasil!',
+      'Somos mais de 300 avaliações 5 estrelas no Google.',
+      'Também emitimos a Nota Fiscal como Tradução e Interpretação, diferentemente do que ocorre no mercado.'
     ];
     for (var d = 0; d < diferenciais.length; d++) {
-      doc.text(diferenciais[d], 16, y);
-      y += 4;
+      var difLines = doc.splitTextToSize('• ' + diferenciais[d], 178);
+      for (var dl = 0; dl < difLines.length; dl++) {
+        doc.text(difLines[dl], 16, y);
+        y += 5;
+      }
+      y += 2;
     }
     
-    y += 4;
-    doc.setFontSize(8);
+    y += 5;
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(100, 100, 100);
-    doc.text('Ficamos no aguardo de retorno da proposta. Agradecemos pela oportunidade!', 16, y);
+    doc.text('Ficamos no aguardo de retorno da proposta e agradecemos pela oportunidade de apresentá-la!', 14, y);
     
     // ==========================
     // RODAPÉ
     // ==========================
-    y += 12;
+    y += 15;
+    if (y > 270) {
+      doc.addPage();
+      y = 20;
+    }
     doc.setDrawColor(200, 200, 200);
     doc.line(14, y, 196, y);
-    y += 4;
-    doc.setFontSize(7);
+    y += 6;
+    doc.setFontSize(9);
     doc.setTextColor(148, 163, 184);
     doc.setFont('helvetica', 'normal');
-    doc.text('Gerado em: ' + new Date().toLocaleDateString('pt-BR') + ' | ' + dadosEmpresa.contato + ' | ' + dadosEmpresa.email, 14, y);
+    doc.text('Gerado em: ' + new Date().toLocaleDateString('pt-BR'), 14, y);
+    doc.text(dadosEmpresa.contato + ' | ' + dadosEmpresa.email, 14, y + 5);
     doc.text('www.librasalvador.com', 196, y, { align: 'right' });
     
     // ==========================
