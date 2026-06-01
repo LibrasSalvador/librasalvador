@@ -444,6 +444,11 @@ const gerarPDF = () => {
     // ==========================
     // 5. CONDIÇÕES
     // ==========================
+    if (y > 220) {
+      doc.addPage();
+      y = 20;
+    }
+    
     doc.setFillColor(0, 74, 173);
     doc.rect(14, y - 5, 182, 8, 'F');
     doc.setTextColor(255, 255, 255);
@@ -503,10 +508,9 @@ const gerarPDF = () => {
     // ==========================
     // DIFERENCIAIS
     // ==========================
-    if (y > 250) {
+    if (y > 180) {
       doc.addPage();
       y = 20;
-      pageNum++;
     }
     
     doc.setFillColor(22, 101, 52);
@@ -545,11 +549,7 @@ const gerarPDF = () => {
     // ==========================
     // RODAPÉ
     // ==========================
-    y += 15;
-    if (y > 270) {
-      doc.addPage();
-      y = 20;
-    }
+    y += 20;
     doc.setDrawColor(200, 200, 200);
     doc.line(14, y, 196, y);
     y += 6;
