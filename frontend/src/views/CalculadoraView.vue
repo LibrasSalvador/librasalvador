@@ -361,7 +361,7 @@ const gerarPDF = () => {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(60, 60, 60);
     doc.text('Encargos/Impostos (' + (form.value.imposto ? form.value.imposto : 0) + '%)', 16, y);
-    doc.text('R$ ' + valorImposto.value.toFixed(2), 170, y, { align: 'right' });
+    doc.text('R$ ' + valorImposto.toFixed(2), 170, y, { align: 'right' });
     y += 7;
     
     y += 8;
