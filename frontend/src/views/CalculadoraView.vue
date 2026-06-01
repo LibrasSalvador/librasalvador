@@ -63,8 +63,13 @@
           </div>
 
           <div class="form-group">
+            <label>Prazo de Pagamento</label>
+            <input v-model="form.prazoPagamento" type="text" placeholder="Ex: À combinar" />
+          </div>
+
+          <div class="form-group">
             <label>Validade da Proposta (dias)</label>
-            <input v-model.number="form.validadeProposta" type="number" min="1" placeholder="Ex: 10" />
+            <input v-model="form.validadeProposta" type="number" min="1" placeholder="Ex: 10" />
           </div>
 
           <div class="form-group">
@@ -154,6 +159,7 @@ const form = ref({
   imposto: 6,
   observacoes: '',
   prazoEntrega: '',
+  prazoPagamento: '',
   validadeProposta: 10,
   politicaCancelamento: '',
   requisitos: ''
@@ -278,15 +284,19 @@ const gerarPDF = () => {
     var clienteNome = form.value.nomeCliente ? form.value.nomeCliente : '(não informado)';
     doc.text('Cliente: ' + clienteNome, 14, y);
     y += 5;
-    var cnpjCliente = form.value.cnpjpCliente ? form.value.cnpjCliente : '_________________________________';
-    doc.text('CNPJ: ' + cnpjCliente, 14, y);
+    if (form.value.cnpjCliente) {
+      doc.text('CNPJ: ' + form.value.cnpjCliente, 14, y);
+      y += 5;
+    }
+    if (form.value.responsavelContato) {
+      doc.text('Responsável pelo contato: ' + form.value.responsavelContato, 14, y);
+      y += 5;
+    }
+    if (form.value.setor) {
+      doc.text('Setor: ' + form.value.setor, 14, y);
+      y += 5;
+    }
     y += 5;
-    var responsavel = form.value.responsavelContato ? form.value.responsavelContato : '________________________';
-    doc.text('Responsável pelo contato: ' + responsavel, 14, y);
-    y += 5;
-    var setor = form.value.setor ? form.value.setor : '_________________________________';
-    doc.text('Setor: ' + setor, 14, y);
-    y += 10;
     
     // ==========================
     // 2. DESCRIÇÃO DETALHADA DOS SERVIÇOS
@@ -395,7 +405,11 @@ const gerarPDF = () => {
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Prazo de pagamento: _________________________________', 14, y);
+    if (form.value.prazoPagamento) {
+      doc.text('Prazo de pagamento: ' + form.value.prazoPagamento, 14, y);
+    } else {
+      doc.text('Prazo de pagamento: _________________________________', 14, y);
+    }
     y += 8;
     doc.setFont('helvetica', 'bold');
     doc.text('DADOS PARA PAGAMENTO:', 14, y);
@@ -424,9 +438,15 @@ const gerarPDF = () => {
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Prazo de Entrega/Execucao: ' + (form.value.prazoEntrega ? form.value.prazoEntrega : '________________________________'), 14, y);
+    var prazoTexto = form.value.prazoEntrega ? form.value.prazoEntrega : '________________________________';
+    doc.text('Prazo de Entrega/Execucao: ' + prazoTexto, 14, y);
     y += 6;
-    doc.text('Validade da Proposta: Este orcamento e valido por ' + (form.value.validadeProposta || 10) + ' dias.', 14, y);
+    var validade = form.value.validadeProposta;
+    if (validade && validade > 0) {
+      doc.text('Validade da Proposta: Este orcamento e valido por ' + validade + ' dias.', 14, y);
+    } else {
+      doc.text('Validade da Proposta: _________________________________', 14, y);
+    }
     y += 10;
     
     // ==========================
