@@ -33,7 +33,12 @@ const server = http.createServer(app); // ADICIONADO: Criando o servidor HTTP pa
 // ==========================================
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',').map(s => s.trim())
-  : ["https://librasalvador.vercel.app", "http://localhost:5173", "http://localhost:5000"];
+  : [
+    "https://librasalvador.vercel.app",
+    "https://librasalvador.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:5000"
+  ];
 
 app.use(cors({
   origin: allowedOrigins,
