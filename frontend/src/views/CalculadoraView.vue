@@ -471,7 +471,7 @@ const gerarPDF = () => {
       'interpretacao em Libras e foi criada pela uniao de duas paixoes:',
       'a Libras e a historia da cidade de Salvador!',
       'Temos o compromisso com a qualidade e etica no atendimento',
-      'ao publiko Surdo, por meio da acessibilidade linguistica.',
+      'ao público Surdo, por meio da acessibilidade linguística.',
       'Possuimos uma equipe de interpretes qualificados para',
       'atendimento em varios estados do Brasil!',
       'Somos mais de 300 avaliacoes 5 estrelas no Google.',
