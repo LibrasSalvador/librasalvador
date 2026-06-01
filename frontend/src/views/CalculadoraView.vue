@@ -193,8 +193,7 @@ const gerarPDF = () => {
       endereco: 'Rua Alceu Amoroso Lima, 786, Edf. Tancredo Neves Trade Center, Sala 312, Caminho das Árvores, Salvador/BA',
       cep: '41.820-770',
       contato: '(71) 98836-1371',
-      email: 'contato@librasalvador.com',
-      dadosBancarios: 'Pix: 34989801000143 (CNPJ)\nBanco Inter (077) Ag: 0001 | CC: 4819126-4 (Conta PJ digital)'
+      email: 'contato@librasalvador.com'
     };
     
     let y = 15;
@@ -393,14 +392,16 @@ const gerarPDF = () => {
     doc.text('Prazo de pagamento: _________________________________', 14, y);
     y += 8;
     doc.setFont('helvetica', 'bold');
-    doc.text('Dados para pagamento:', 14, y);
-    y += 6;
+    doc.text('DADOS PARA PAGAMENTO:', 14, y);
+    y += 8;
     doc.setFont('helvetica', 'normal');
-    doc.text('Pix: 34989801000143 (CNPJ)', 14, y);
+    doc.text('Libras Salvador LTDA', 14, y);
+    y += 6;
+    doc.text('Pix: 71 98836-1371 (Celular)', 14, y);
     y += 6;
     doc.text('Transferência bancária:', 14, y);
     y += 6;
-    doc.text('Banco Inter (077) Ag: 0001 | CC: 4819126-4 (Conta PJ digital)', 14, y);
+    doc.text('Banco Itaú (341) Ag: 1395 | CC: 99765-1', 14, y);
     y += 10;
     
     // ==========================
