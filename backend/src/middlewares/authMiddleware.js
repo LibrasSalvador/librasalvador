@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
 module.exports = (req, res, next) => {
     // Tenta pegar o token do cabeçalho 'Authorization'
@@ -17,8 +18,28 @@ module.exports = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
-        next();
+        
+        // Buscar nome real do usuário no banco de dados
+        if (decoded.id) {
+            User.findById(decoded.id).select('nome role').then(user => {
+                if (user) {
+                    req.user = {
+                        id: decoded.id,
+                        role: user.role,
+                        nome: user.nome
+                    };
+                } else {
+                    req.user = decoded;
+                }
+                next();
+            }).catch(() => {
+                req.user = decoded;
+                next();
+            });
+        } else {
+            req.user = decoded;
+            next();
+        }
     } catch (err) {
         res.status(401).json({ msg: "Token inválido ou expirado." });
     }
