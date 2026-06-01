@@ -436,27 +436,54 @@ const gerarPDF = () => {
     y = 20;
     
     // ==========================
-    // 6. TERMOS E CONDICOES (Observacoes)
+    // 6. TERMOS E CONDICOES
     // ==========================
     doc.setFillColor(0, 74, 173);
     doc.rect(14, y - 5, 182, 8, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
-    doc.text('6. TERMOS E CONDICOES', 16, y);
+    doc.text('6. CONDICOES', 16, y);
     y += 10;
     
     doc.setTextColor(60, 60, 60);
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text('Politica de Cancelamento: ' + (form.value.politicaCancelamento ? form.value.politicaCancelamento : '________________________________'), 14, y);
-    y += 6;
-    doc.text('Requisitos: ' + (form.value.requisitos ? form.value.requisitos : 'O que voce precisa que o cliente forneca'), 14, y);
-    y += 5;
-    if (!form.value.requisitos) {
-      doc.text('comecar (documentos, acesso ao local, material).', 14, y);
+    
+    var condicoes = [
+      '- Nossos interpretes estarao disponiveis para atuar no evento a partir do horario solicitado pelo cliente. E importante ressaltar que, caso o evento atrase, as horas de disponibilidade dos interpretes ainda serao cobradas integralmente, de acordo com a programacao original acordada.',
+      '- Caso haja um atraso maior de 10 minutos a cada hora trabalhada sera cobrada uma hora excedente no valor final do servico.',
+      '- Proposta ja inclui os valores referentes aos tributos sobre emissao da nota (19%).'
+    ];
+    
+    for (var c = 0; c < condicoes.length; c++) {
+      var texto = condicoes[c];
+      // Quebrar texto longo em linhas
+      var linhas = doc.splitTextToSize(texto, 178);
+      for (var l = 0; l < linhas.length; l++) {
+        doc.text(linhas[l], 14, y);
+        y += 5;
+      }
+      y += 3;
     }
-    y += 10;
+    
+    y += 5;
+    
+    // Politica de Cancelamento (opcional)
+    if (form.value.politicaCancelamento) {
+      doc.setFont('helvetica', 'bold');
+      doc.text('Politica de Cancelamento:', 14, y);
+      y += 6;
+      doc.setFont('helvetica', 'normal');
+      var cancelLinhas = doc.splitTextToSize(form.value.politicaCancelamento, 178);
+      for (var cl = 0; cl < cancelLinhas.length; cl++) {
+        doc.text(cancelLinhas[cl], 14, y);
+        y += 5;
+      }
+      y += 8;
+    } else {
+      y += 5;
+    }
     
     // ==========================
     // DIFERENCIAL
