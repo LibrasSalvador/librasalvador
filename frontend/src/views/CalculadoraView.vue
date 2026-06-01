@@ -204,21 +204,31 @@ const gerarPDF = () => {
     // ==========================
     // Fundo azul do cabeçalho
     doc.setFillColor(0, 74, 173);
-    doc.rect(0, 0, 210, 30, 'F');
+    doc.rect(0, 0, 210, 35, 'F');
     
-    // Texto do cabeçalho
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('ORÇAMENTO', 14, 18);
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(245, 245, 245);
-    doc.text('Serviços de Tradução e Interpretação em Libras', 14, 26);
-    doc.text('LIBRAS SALVADOR', 170, 18, { align: 'center' });
-    doc.text('CNPJ: 34.989.801/0001-43', 170, 24, { align: 'center' });
+    // Adicionar logo
+    try {
+      doc.addImage(logoImg, 'PNG', 15, 5, 35, 25);
+      doc.text('ORÇAMENTO', 55, 18);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(245, 245, 245);
+      doc.text('Serviços de Tradução e Interpretação em Libras', 55, 26);
+    } catch (e) {
+      // Se a logo não carregar, mostra texto
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('ORÇAMENTO', 14, 18);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(245, 245, 245);
+      doc.text('Serviços de Tradução e Interpretação em Libras', 14, 26);
+      doc.text('LIBRAS SALVADOR', 170, 18, { align: 'center' });
+      doc.text('CNPJ: 34.989.801/0001-43', 170, 24, { align: 'center' });
+    }
     
-    y = 38;
+    y = 42;
     
     // ==========================
     // 1. IDENTIFICAÇÃO
